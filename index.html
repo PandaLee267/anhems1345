@@ -186,6 +186,19 @@
     background:transparent;border:1px solid rgba(166,51,43,.35);border-radius:5px;
   }
   .btn-del:hover{background:var(--cinnabar);color:#fff;border-color:var(--cinnabar)}
+  .btn-edit{
+    padding:5px 11px;font-size:.78rem;color:var(--ink);
+    background:transparent;border:1px solid var(--line);border-radius:5px;margin-right:6px;
+  }
+  .btn-edit:hover{background:var(--ink);color:#f4ead6;border-color:var(--ink)}
+  td.actions{white-space:nowrap}
+  tr.grp td{
+    background:#e9dcc0;color:#4a3f2c;font-size:.78rem;letter-spacing:.05em;
+    font-weight:600;padding:7px 12px;border-bottom:1px solid #ddd0b4;
+  }
+  tr.grp td span{float:right;color:#8a7450;font-weight:500}
+  .actions{display:flex;gap:10px;align-items:center}
+  #cancelEdit{grid-column:1/-1;justify-self:start}
   .empty{text-align:center;padding:34px 16px;color:var(--ink-soft);font-size:.9rem}
   .empty b{display:block;font-family:'Lora',serif;font-size:1.2rem;color:var(--ink);margin-bottom:2px;font-weight:600}
 
@@ -243,7 +256,7 @@
   <section class="card" aria-labelledby="form-title">
     <div class="card-head">
       <h2 id="form-title">Ghi danh</h2>
-      <p class="hint">Trùng tên ingame sẽ cập nhật lại hồ sơ.</p>
+      <p class="hint">Mỗi tên Zalo tối đa 5 nick. Bấm <b>Sửa</b> để chỉnh nick của mình.</p>
     </div>
     <div class="rule"></div>
 
@@ -268,8 +281,11 @@
           <option>Bận</option>
         </select>
       </div>
-      <div class="full"><label for="ghichu">Ghi chú</label><textarea id="ghichu" placeholder="Thông tin thêm về acc…"></textarea></div>
-      <button type="submit" class="btn-primary">Lưu hồ sơ</button>
+      <div><label for="zalo">Tên Zalo</label><input id="zalo" required placeholder="VD: Nguyễn Văn A" autocomplete="off"></div>
+      <div class="full actions">
+        <button type="submit" class="btn-primary" id="saveBtn">Lưu hồ sơ</button>
+        <button type="button" class="btn-ghost" id="cancelEdit" hidden>Hủy sửa</button>
+      </div>
     </form>
   </section>
 
@@ -285,7 +301,7 @@
       <thead>
         <tr>
           <th>#</th><th>Tên ingame</th><th>Cấp</th>
-          <th>Môn phái</th><th>Chức vụ</th><th>Trạng thái</th><th>Ghi chú</th><th></th>
+          <th>Môn phái</th><th>Chức vụ</th><th>Trạng thái</th><th>Tên Zalo</th><th></th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -331,9 +347,15 @@ const firebaseConfig = {
 
 const configured = !firebaseConfig.apiKey.includes('DAN_');
 const ADMIN_CODE = 'Quyen202Lee';
+const MY_KEY = 'anhem_my_ids';
 let db = null;
 let isAdmin = sessionStorage.getItem('anhem_admin') === '1';
 let members = [];
+let editingId = null;
+
+const myIds = new Set(JSON.parse(localStorage.getItem(MY_KEY) || '[]'));
+const saveMyIds = () => localStorage.setItem(MY_KEY, JSON.stringify([...myIds]));
+const nickLimit = z => members.filter(x => (x.zalo || '').trim().toLowerCase() === z.trim().toLowerCase()).length;
 
 const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const tbody = document.getElementById('tbody');
@@ -351,7 +373,17 @@ function render() {
     showMsg('Danh sách còn trống', 'Hãy là người đầu tiên ghi danh.');
     return;
   }
-  tbody.innerHTML = members.map((m, i) => `
+  let html = '', last = null;
+  members.forEach((m, i) => {
+    const z = (m.zalo || '').trim();
+    if (z.toLowerCase() !== (last || '').toLowerCase()) {
+      last = z;
+      const n = nickLimit(z);
+      html += `<tr class="grp"><td colspan="8">Zalo: ${esc(z) || '—'} <span>${n}/5 nick</span></td></tr>`;
+    }
+    const editBtn = `<button class="btn-edit" data-id="${esc(m.id)}" type="button">Sửa</button>`;
+    const delBtn = isAdmin ? `<button class="btn-del" data-id="${esc(m.id)}" type="button" aria-label="Xóa ${esc(m.ten)}">Xóa</button>` : '';
+    html += `
     <tr>
       <td class="idx">${i + 1}</td>
       <td class="name">${esc(m.ten)}</td>
@@ -359,16 +391,18 @@ function render() {
       <td>${esc(m.phai) || '—'}</td>
       <td>${esc(m.chuc)}</td>
       <td><span class="tag ${statusClass(m.trangthai)}">${esc(m.trangthai)}</span></td>
-      <td>${esc(m.ghichu) || '—'}</td>
-      <td>${isAdmin ? `<button class="btn-del" data-id="${esc(m.id)}" type="button" aria-label="Xóa ${esc(m.ten)}">Xóa</button>` : ''}</td>
-    </tr>`).join('');
+      <td>${esc(z) || '—'}</td>
+      <td class="actions">${editBtn}${delBtn}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
 }
 
 if (configured) {
   db = getFirestore(initializeApp(firebaseConfig));
   onSnapshot(collection(db, 'members'), snap => {
     members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    members.sort((a, b) => (a.ten || '').localeCompare(b.ten || '', 'vi'));
+    members.sort((a, b) => (a.zalo || '').localeCompare(b.zalo || '', 'vi') || (a.ten || '').localeCompare(b.ten || '', 'vi'));
     render();
   }, err => showMsg('Không tải được dữ liệu', esc(err.message)));
 } else {
@@ -427,15 +461,22 @@ document.getElementById('form').addEventListener('submit', async e => {
     phai: phai.value.trim(),
     chuc: chuc.value,
     trangthai: trangthai.value,
-    ghichu: ghichu.value.trim()
+    zalo: zalo.value.trim()
   };
-  if (!m.ten) return;
+  if (!m.ten || !m.zalo) return;
 
-  const id = encodeURIComponent(m.ten.toLowerCase());
-  const exists = members.some(x => x.id === id);
-  if (exists) {
-    if (!isAdmin) return alert('Tên ingame "' + m.ten + '" đã có. Chỉ bang chủ mới sửa được hồ sơ này.');
-    if (!confirm('Tên ingame "' + m.ten + '" đã có. Cập nhật lại hồ sơ?')) return;
+  const nameLower = m.ten.toLowerCase();
+  const clash = members.find(x => x.id !== editingId && (x.ten || '').toLowerCase() === nameLower);
+  if (clash) return alert('Tên ingame "' + m.ten + '" đã có người đăng ký.');
+
+  let targetId = editingId;
+  if (editingId) {
+    if (!isAdmin && !myIds.has(editingId)) return alert('Bạn chỉ sửa được nick do mình thêm.');
+  } else {
+    if (!isAdmin && nickLimit(m.zalo) >= 5) {
+      return alert('Zalo "' + m.zalo + '" đã đủ 5 nick. Liên hệ bang chủ để thêm.');
+    }
+    targetId = encodeURIComponent(nameLower);
   }
 
   const btn = e.target.querySelector('button[type="submit"]');
@@ -443,32 +484,70 @@ document.getElementById('form').addEventListener('submit', async e => {
   btn.textContent = 'Đang lưu…';
   try {
     const data = { ...m, updatedAt: serverTimestamp() };
-    if (!exists) data.createdAt = serverTimestamp();
-    await setDoc(doc(db, 'members', id), data, { merge: true });
-    e.target.reset();
+    if (!editingId) data.createdAt = serverTimestamp();
+    await setDoc(doc(db, 'members', targetId), data, { merge: true });
+    if (!isAdmin) { myIds.add(targetId); saveMyIds(); }
+    resetEdit();
   } catch (err) {
-    if (err.code === 'permission-denied') {
-      alert('Không có quyền. Tên này đã được người khác đăng ký.');
-    } else {
-      alert('Lỗi lưu dữ liệu: ' + err.message);
-    }
+    alert('Lỗi lưu dữ liệu: ' + err.message);
   } finally {
     btn.disabled = false;
     btn.textContent = 'Lưu hồ sơ';
   }
 });
 
+function resetEdit() {
+  editingId = null;
+  document.getElementById('form').reset();
+  document.getElementById('cancelEdit').hidden = true;
+  document.getElementById('saveBtn').textContent = 'Lưu hồ sơ';
+}
+
 tbody.addEventListener('click', async e => {
+  const editBtn = e.target.closest('.btn-edit');
+  if (editBtn) {
+    const m = members.find(x => x.id === editBtn.dataset.id);
+    if (!m) return;
+    if (!isAdmin && !myIds.has(m.id)) {
+      const z = (m.zalo || '').trim();
+      if (!z) {
+        if (!confirm('Nick "' + m.ten + '" chưa có tên Zalo. Bạn là chủ nick này? Bấm OK để nhận và điền Zalo.')) return;
+      } else {
+        const typed = prompt('Nhập tên Zalo của bạn để sửa nick "' + m.ten + '":');
+        if (typed === null) return;
+        if (typed.trim().toLowerCase() !== z.toLowerCase()) return alert('Tên Zalo không khớp.');
+      }
+      myIds.add(m.id);
+      saveMyIds();
+    }
+    editingId = m.id;
+    ten.value = m.ten || '';
+    cap.value = m.cap || '';
+    phai.value = m.phai || '';
+    chuc.value = m.chuc || 'Thành viên';
+    trangthai.value = m.trangthai || 'Đang chơi';
+    zalo.value = m.zalo || '';
+    document.getElementById('cancelEdit').hidden = false;
+    document.getElementById('saveBtn').textContent = 'Cập nhật hồ sơ';
+    document.getElementById('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    ten.focus();
+    return;
+  }
+
   const btn = e.target.closest('.btn-del');
   if (!btn || !isAdmin) return;
   const m = members.find(x => x.id === btn.dataset.id);
   if (!confirm('Xóa "' + (m ? m.ten : '') + '" khỏi danh sách?')) return;
   try {
     await deleteDoc(doc(db, 'members', btn.dataset.id));
+    myIds.delete(btn.dataset.id);
+    saveMyIds();
   } catch (err) {
     alert('Lỗi xóa: ' + err.message);
   }
 });
+
+document.getElementById('cancelEdit').addEventListener('click', resetEdit);
 
 document.getElementById('clear').addEventListener('click', async () => {
   if (!configured || !isAdmin || !members.length) return;
@@ -482,8 +561,8 @@ document.getElementById('clear').addEventListener('click', async () => {
 
 document.getElementById('export').addEventListener('click', () => {
   if (!members.length) return alert('Danh sách trống, chưa có gì để xuất.');
-  const head = ['Tên ingame','Cấp độ','Môn phái','Chức vụ','Trạng thái','Ghi chú'];
-  const rows = members.map(m => [m.ten, m.cap, m.phai, m.chuc, m.trangthai, m.ghichu]
+  const head = ['Tên ingame','Cấp độ','Môn phái','Chức vụ','Trạng thái','Tên Zalo'];
+  const rows = members.map(m => [m.ten, m.cap, m.phai, m.chuc, m.trangthai, m.zalo]
     .map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(','));
   const csv = '\uFEFF' + [head.join(','), ...rows].join('\n');
   const a = document.createElement('a');
