@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnhEmS1345 · Võ Lâm Chi Mộng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --paper:#efe7d5;
+    --paper-2:#f7f1e3;
+    --ink:#1b1916;
+    --ink-soft:#5c554a;
+    --line:#d6c8ad;
+    --cinnabar:#a6332b;
+    --cinnabar-2:#c2453a;
+    --gold:#a8863f;
+    --jade:#4c6b58;
+  }
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Be Vietnam Pro',system-ui,sans-serif;
+    font-size:15.5px;
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(1200px 600px at 50% -10%,rgba(255,255,255,.55),transparent 70%),
+      radial-gradient(900px 500px at 100% 100%,rgba(166,51,43,.06),transparent 70%),
+      repeating-linear-gradient(0deg,rgba(120,100,70,.045) 0 1px,transparent 1px 4px);
+    min-height:100vh;
+    padding:32px 18px 64px;
+    line-height:1.65;
+  }
+  .wrap{max-width:920px;margin:0 auto}
+
+  /* ---------- Bảng hiệu ---------- */
+  .plaque{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:20px;
+    padding:26px 28px;
+    border-radius:8px;
+    background:linear-gradient(160deg,#26221c,#15130f 60%,#1d1a15);
+    box-shadow:
+      inset 0 0 0 1px rgba(168,134,63,.45),
+      inset 0 0 50px rgba(0,0,0,.7),
+      0 14px 34px rgba(40,30,20,.28);
+    overflow:hidden;
+  }
+  .plaque::before{
+    content:'';position:absolute;inset:7px;border:1px solid rgba(168,134,63,.28);border-radius:4px;pointer-events:none;
+  }
+  .plaque::after{
+    content:'';position:absolute;right:-40px;top:-60px;width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle,rgba(166,51,43,.35),transparent 65%);pointer-events:none;
+  }
+  .seal{
+    flex:0 0 auto;
+    width:76px;height:76px;
+    display:grid;place-items:center;
+    border-radius:5px;
+    background:linear-gradient(150deg,var(--cinnabar-2),var(--cinnabar));
+    color:#f9efdd;
+    font-family:'Lora',serif;
+    font-weight:700;
+    transform:rotate(-4deg);
+    box-shadow:inset 0 0 0 3px rgba(249,239,221,.6),inset 0 0 0 4px rgba(120,30,24,.7),0 4px 14px rgba(0,0,0,.35);
+    animation:stamp .7s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  .seal b{font-size:2.1rem;line-height:1;letter-spacing:0}
+  .seal small{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:.42rem;letter-spacing:.16em;text-align:center;margin-top:2px}
+  @keyframes stamp{from{transform:rotate(-14deg) scale(1.35);opacity:0}to{transform:rotate(-4deg) scale(1);opacity:1}}
+  .plaque-txt{position:relative;z-index:1;min-width:0}
+  .eyebrow{
+    font-size:.66rem;letter-spacing:.34em;text-transform:uppercase;color:#b9a37a;margin-bottom:6px;
+  }
+  h1{
+    font-family:'Lora',serif;
+    font-weight:700;
+    font-size:clamp(1.6rem,4.4vw,2.3rem);
+    line-height:1.22;
+    color:#f4ead6;
+    letter-spacing:0;
+  }
+  h1 em{font-style:normal;color:var(--gold)}
+  .plaque-sub{color:#b3a892;font-size:.9rem;margin-top:6px;font-weight:300}
+  .plaque-sub b{color:#d9c9a6;font-weight:500}
+
+  /* ---------- Thẻ ---------- */
+  .card{
+    position:relative;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 1px 0 #fff inset,0 10px 26px rgba(80,62,40,.10);
+    padding:24px;
+    margin-top:26px;
+  }
+  .card-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  h2{
+    font-family:'Lora',serif;
+    font-size:1.4rem;font-weight:600;letter-spacing:0;
+  }
+  .hint{font-size:.75rem;color:var(--ink-soft);margin-left:auto}
+  .rule{height:2px;background:linear-gradient(90deg,var(--cinnabar),var(--gold) 45%,transparent);border-radius:2px;margin:0 0 18px}
+
+  /* ---------- Form ---------- */
+  form{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+  .full{grid-column:1/-1}
+  label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.04em;color:#4a4438;margin-bottom:5px}
+  input,select,textarea{
+    width:100%;padding:11px 12px;
+    font:inherit;font-size:.95rem;color:var(--ink);
+    background:#fffdf7;
+    border:1px solid var(--line);
+    border-radius:6px;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  input::placeholder,textarea::placeholder{color:#b3a894}
+  input:focus,select:focus,textarea:focus{
+    outline:none;border-color:var(--cinnabar);
+    box-shadow:0 0 0 3px rgba(166,51,43,.12);
+  }
+  textarea{resize:vertical;min-height:62px}
+  button{cursor:pointer;font:inherit;border:0}
+  .btn-primary{
+    grid-column:1/-1;
+    justify-self:start;
+    padding:11px 30px;
+    font-weight:600;font-size:.88rem;letter-spacing:.04em;
+    color:#f9efdd;
+    background:linear-gradient(160deg,var(--cinnabar-2),var(--cinnabar));
+    border-radius:6px;
+    box-shadow:0 3px 0 #6f1e18,0 8px 18px rgba(140,40,32,.28);
+    transition:transform .12s,box-shadow .12s;
+  }
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 0 #6f1e18,0 10px 22px rgba(140,40,32,.32)}
+  .btn-primary:active{transform:translateY(2px);box-shadow:0 1px 0 #6f1e18}
+
+  /* ---------- Danh sách ---------- */
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:34px}
+  .toolbar h2{margin-right:auto;display:flex;align-items:center;gap:10px}
+  .count{
+    font-family:'Lora',serif;font-size:1rem;font-weight:600;
+    color:#f9efdd;background:var(--ink);border-radius:999px;
+    padding:1px 11px;letter-spacing:.02em;
+  }
+  .btn-ghost{
+    padding:8px 16px;font-size:.78rem;font-weight:500;
+    color:var(--ink);background:transparent;
+    border:1px solid var(--line);border-radius:6px;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .btn-ghost:hover{background:#fffdf7;border-color:var(--gold);color:var(--cinnabar)}
+  .table-wrap{
+    margin-top:14px;
+    border:1px solid var(--line);border-radius:10px;overflow:auto;
+    background:#fffdf7;
+    box-shadow:0 10px 26px rgba(80,62,40,.08);
+  }
+  table{width:100%;border-collapse:collapse;font-size:.9rem;min-width:720px}
+  thead th{
+    background:linear-gradient(180deg,#2a261f,#1b1916);
+    color:#e6d6b4;
+    font-size:.7rem;font-weight:600;letter-spacing:.08em;
+    padding:12px;text-align:left;white-space:nowrap;
+  }
+  tbody td{padding:11px 12px;border-bottom:1px solid #ece2cd;vertical-align:top}
+  tbody tr:nth-child(even) td{background:#faf5e9}
+  tbody tr:hover td{background:#f3ead6}
+  tbody tr:last-child td{border-bottom:0}
+  td.idx{font-family:'Lora',serif;font-weight:600;color:var(--gold);width:38px;text-align:center}
+  td.name{font-weight:600}
+  .tag{
+    display:inline-block;font-size:.76rem;font-weight:600;padding:2px 10px;border-radius:999px;
+    background:rgba(76,107,88,.14);color:var(--jade);white-space:nowrap;
+  }
+  .tag.off{background:rgba(166,51,43,.12);color:var(--cinnabar)}
+  .tag.busy{background:rgba(168,134,63,.16);color:#8a6d2c}
+  .btn-del{
+    padding:5px 11px;font-size:.78rem;color:var(--cinnabar);
+    background:transparent;border:1px solid rgba(166,51,43,.35);border-radius:5px;
+  }
+  .btn-del:hover{background:var(--cinnabar);color:#fff;border-color:var(--cinnabar)}
+  .empty{text-align:center;padding:34px 16px;color:var(--ink-soft);font-size:.9rem}
+  .empty b{display:block;font-family:'Lora',serif;font-size:1.2rem;color:var(--ink);margin-bottom:2px;font-weight:600}
+
+  /* ---------- Quản trị ---------- */
+  dialog{
+    border:1px solid var(--line);border-radius:12px;background:var(--paper-2);color:var(--ink);
+    padding:22px;width:min(340px,92vw);box-shadow:0 24px 60px rgba(20,16,12,.35);
+  }
+  dialog::backdrop{background:rgba(20,16,12,.55)}
+  dialog h3{font-family:'Lora',serif;font-size:1.25rem;font-weight:600;margin-bottom:3px}
+  .dlg-sub{font-size:.8rem;color:var(--ink-soft);margin-bottom:14px}
+  dialog label{font-size:.72rem;font-weight:600;color:#4a4438;display:block;margin-bottom:4px}
+  dialog input{margin-bottom:10px}
+  .err{color:var(--cinnabar);font-size:.78rem;min-height:1.1em;margin:0 0 10px}
+  .dlg-actions{display:flex;gap:8px;justify-content:flex-end}
+  .admin-on{color:var(--jade);font-weight:600}
+
+  footer{
+    margin-top:40px;padding-top:18px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-size:.72rem;color:var(--ink-soft);
+  }
+  footer span{letter-spacing:.08em}
+
+  @media(max-width:640px){
+    body{padding:18px 12px 48px}
+    form{grid-template-columns:1fr}
+    .plaque{padding:22px 18px;gap:14px}
+    .seal{width:62px;height:62px}
+    .seal b{font-size:1.7rem}
+    .seal small{font-size:.38rem}
+    .card{padding:18px}
+    .hint{margin-left:0;flex-basis:100%}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+  :focus-visible{outline:2px solid var(--cinnabar);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="plaque">
+    <div class="seal"><div><b>AE</b><small>S1345</small></div></div>
+    <div class="plaque-txt">
+      <p class="eyebrow">Võ Lâm Chi Mộng · S1345</p>
+      <h1>Bang <em>AnhEmS1345</em></h1>
+      <p class="plaque-sub">Nhập thông tin ingame để bang chủ <b>kiểm soát acc</b> trong bang.</p>
+    </div>
+  </header>
+
+  <section class="card" aria-labelledby="form-title">
+    <div class="card-head">
+      <h2 id="form-title">Ghi danh</h2>
+      <p class="hint">Trùng tên ingame sẽ cập nhật lại hồ sơ.</p>
+    </div>
+    <div class="rule"></div>
+
+    <form id="form">
+      <div><label for="ten">Tên ingame *</label><input id="ten" required placeholder="VD: KiếmKhách01" autocomplete="off"></div>
+      <div><label for="cap">Cấp độ</label><input id="cap" type="number" min="1" placeholder="VD: 120"></div>
+      <div><label for="phai">Môn phái</label><input id="phai" placeholder="VD: Thiếu Lâm" autocomplete="off"></div>
+      <div><label for="chuc">Chức vụ</label>
+        <select id="chuc">
+          <option>Thành viên</option>
+          <option>Bang trưởng</option>
+          <option>Phó bang</option>
+          <option>Đại Sư Huynh</option>
+          <option>Đại Sư Tỷ</option>
+          <option>Trưởng lão</option>
+        </select>
+      </div>
+      <div><label for="trangthai">Trạng thái</label>
+        <select id="trangthai">
+          <option>Đang chơi</option>
+          <option>Nghỉ</option>
+          <option>Bận</option>
+        </select>
+      </div>
+      <div class="full"><label for="ghichu">Ghi chú</label><textarea id="ghichu" placeholder="Thông tin thêm về acc…"></textarea></div>
+      <button type="submit" class="btn-primary">Lưu hồ sơ</button>
+    </form>
+  </section>
+
+  <div class="toolbar">
+    <h2>Danh sách anh em <span class="count" id="count">0</span></h2>
+    <button class="btn-ghost" id="export" type="button">Xuất CSV</button>
+    <button class="btn-ghost" id="clear" type="button" hidden>Xóa tất cả</button>
+    <button class="btn-ghost" id="adminBtn" type="button">Quản trị</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Tên ingame</th><th>Cấp</th>
+          <th>Môn phái</th><th>Chức vụ</th><th>Trạng thái</th><th>Ghi chú</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <span>ANHEMS1345 · VÕ LÂM CHI MỘNG</span>
+    <span>Thiết kế: <b style="color:var(--cinnabar);font-weight:600">PandaLee</b></span>
+    <span>Dữ liệu dùng chung · cập nhật trực tiếp</span>
+  </footer>
+</div>
+
+<dialog id="adminDlg">
+  <form id="adminForm">
+    <h3>Quản trị bang</h3>
+    <p class="dlg-sub">Đăng nhập để sửa / xóa hồ sơ.</p>
+    <label for="adminEmail">Email</label>
+    <input id="adminEmail" type="email" required autocomplete="username">
+    <label for="adminPass">Mật khẩu</label>
+    <input id="adminPass" type="password" required autocomplete="current-password">
+    <p id="adminErr" class="err"></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn-ghost" id="adminCancel">Hủy</button>
+      <button type="submit" class="btn-primary">Đăng nhập</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ====== DÁN CONFIG FIREBASE CỦA BẠN VÀO ĐÂY ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDpj_TspbM07AXT7u-wlqnEbhHwpjOTW0o",
+  authDomain: "anhems1345.firebaseapp.com",
+  projectId: "anhems1345",
+  storageBucket: "anhems1345.firebasestorage.app",
+  messagingSenderId: "895893695498",
+  appId: "1:895893695498:web:0cb450d46ca939e6b2c3f3"
+};
+/* ================================================== */
+
+const configured = !firebaseConfig.apiKey.includes('DAN_');
+let db = null;
+let members = [];
+
+const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tbody = document.getElementById('tbody');
+const countEl = document.getElementById('count');
+const statusClass = s => s === 'Nghỉ' ? 'off' : s === 'Bận' ? 'busy' : '';
+
+function showMsg(title, text) {
+  countEl.textContent = 0;
+  tbody.innerHTML = `<tr><td colspan="8" class="empty"><b>${title}</b>${text}</td></tr>`;
+}
+
+function render() {
+  countEl.textContent = members.length;
+  if (!members.length) {
+    showMsg('Danh sách còn trống', 'Hãy là người đầu tiên ghi danh.');
+    return;
+  }
+  tbody.innerHTML = members.map((m, i) => `
+    <tr>
+      <td class="idx">${i + 1}</td>
+      <td class="name">${esc(m.ten)}</td>
+      <td>${esc(m.cap) || '—'}</td>
+      <td>${esc(m.phai) || '—'}</td>
+      <td>${esc(m.chuc)}</td>
+      <td><span class="tag ${statusClass(m.trangthai)}">${esc(m.trangthai)}</span></td>
+      <td>${esc(m.ghichu) || '—'}</td>
+      <td><button class="btn-del" data-id="${esc(m.id)}" type="button" aria-label="Xóa ${esc(m.ten)}">Xóa</button></td>
+    </tr>`).join('');
+}
+
+if (configured) {
+  db = getFirestore(initializeApp(firebaseConfig));
+  onSnapshot(collection(db, 'members'), snap => {
+    members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    members.sort((a, b) => (a.ten || '').localeCompare(b.ten || '', 'vi'));
+    render();
+  }, err => showMsg('Không tải được dữ liệu', esc(err.message)));
+} else {
+  showMsg('Chưa cấu hình Firebase', 'Mở file index.html và dán firebaseConfig ở đầu &lt;script type="module"&gt;.');
+}
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!configured) return alert('Chưa cấu hình Firebase. Xem hướng dẫn trong file index.html.');
+
+  const m = {
+    ten: ten.value.trim(),
+    cap: cap.value.trim(),
+    phai: phai.value.trim(),
+    chuc: chuc.value,
+    trangthai: trangthai.value,
+    ghichu: ghichu.value.trim()
+  };
+  if (!m.ten) return;
+
+  const id = encodeURIComponent(m.ten.toLowerCase());
+  const exists = members.some(x => x.id === id);
+  if (exists && !confirm('Tên ingame "' + m.ten + '" đã có. Cập nhật lại hồ sơ?')) return;
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Đang lưu…';
+  try {
+    const data = { ...m, updatedAt: serverTimestamp() };
+    if (!exists) data.createdAt = serverTimestamp();
+    await setDoc(doc(db, 'members', id), data, { merge: true });
+    e.target.reset();
+  } catch (err) {
+    alert('Lỗi lưu dữ liệu: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Lưu hồ sơ';
+  }
+});
+
+tbody.addEventListener('click', async e => {
+  const btn = e.target.closest('.btn-del');
+  if (!btn) return;
+  const m = members.find(x => x.id === btn.dataset.id);
+  if (!confirm('Xóa "' + (m ? m.ten : '') + '" khỏi danh sách?')) return;
+  try {
+    await deleteDoc(doc(db, 'members', btn.dataset.id));
+  } catch (err) {
+    alert('Lỗi xóa: ' + err.message);
+  }
+});
+
+document.getElementById('clear').addEventListener('click', async () => {
+  if (!configured || !members.length) return;
+  if (!confirm('Xóa toàn bộ danh sách? Không khôi phục được.')) return;
+  try {
+    await Promise.all(members.map(x => deleteDoc(doc(db, 'members', x.id))));
+  } catch (err) {
+    alert('Lỗi xóa: ' + err.message);
+  }
+});
+
+document.getElementById('export').addEventListener('click', () => {
+  if (!members.length) return alert('Danh sách trống, chưa có gì để xuất.');
+  const head = ['Tên ingame','Cấp độ','Môn phái','Chức vụ','Trạng thái','Ghi chú'];
+  const rows = members.map(m => [m.ten, m.cap, m.phai, m.chuc, m.trangthai, m.ghichu]
+    .map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(','));
+  const csv = '\uFEFF' + [head.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8'}));
+  a.download = 'AnhEmS1345-ingame.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>
