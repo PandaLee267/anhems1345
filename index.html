@@ -109,7 +109,7 @@
   .rule{height:2px;background:linear-gradient(90deg,var(--cinnabar),var(--gold) 45%,transparent);border-radius:2px;margin:0 0 18px}
 
   /* ---------- Form ---------- */
-  form{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+  #form{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
   .full{grid-column:1/-1}
   label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.04em;color:#4a4438;margin-bottom:5px}
   input,select,textarea{
@@ -192,7 +192,8 @@
   /* ---------- Quản trị ---------- */
   dialog{
     border:1px solid var(--line);border-radius:12px;background:var(--paper-2);color:var(--ink);
-    padding:22px;width:min(340px,92vw);box-shadow:0 24px 60px rgba(20,16,12,.35);
+    padding:22px;width:min(340px,92vw);margin:auto;
+    box-shadow:0 24px 60px rgba(20,16,12,.35);
   }
   dialog::backdrop{background:rgba(20,16,12,.55)}
   dialog h3{font-family:'Lora',serif;font-size:1.25rem;font-weight:600;margin-bottom:3px}
@@ -201,6 +202,7 @@
   dialog input{margin-bottom:10px}
   .err{color:var(--cinnabar);font-size:.78rem;min-height:1.1em;margin:0 0 10px}
   .dlg-actions{display:flex;gap:8px;justify-content:flex-end}
+  .dlg-actions button{white-space:nowrap}
   .admin-on{color:var(--jade);font-weight:600}
 
   footer{
@@ -212,7 +214,7 @@
 
   @media(max-width:640px){
     body{padding:18px 12px 48px}
-    form{grid-template-columns:1fr}
+    #form{grid-template-columns:1fr}
     .plaque{padding:22px 18px;gap:14px}
     .seal{width:62px;height:62px}
     .seal b{font-size:1.7rem}
@@ -246,7 +248,7 @@
     <div class="rule"></div>
 
     <form id="form">
-      <div><label for="ten">Tên ingame *</label><input id="ten" required placeholder="VD: KiếmKhách01" autocomplete="off"></div>
+      <div><label for="ten">Tên ingame *</label><input id="ten" required maxlength="40" placeholder="VD: KiếmKhách01" autocomplete="off"></div>
       <div><label for="cap">Cấp độ</label><input id="cap" type="number" min="1" placeholder="VD: 120"></div>
       <div><label for="phai">Môn phái</label><input id="phai" placeholder="VD: Thiếu Lâm" autocomplete="off"></div>
       <div><label for="chuc">Chức vụ</label>
@@ -300,15 +302,13 @@
 <dialog id="adminDlg">
   <form id="adminForm">
     <h3>Quản trị bang</h3>
-    <p class="dlg-sub">Đăng nhập để sửa / xóa hồ sơ.</p>
-    <label for="adminEmail">Email</label>
-    <input id="adminEmail" type="email" required autocomplete="username">
-    <label for="adminPass">Mật khẩu</label>
-    <input id="adminPass" type="password" required autocomplete="current-password">
+    <p class="dlg-sub">Nhập mã bảo mật để sửa / xóa hồ sơ.</p>
+    <label for="adminPass">Mã bảo mật</label>
+    <input id="adminPass" type="password" required autocomplete="off">
     <p id="adminErr" class="err"></p>
     <div class="dlg-actions">
       <button type="button" class="btn-ghost" id="adminCancel">Hủy</button>
-      <button type="submit" class="btn-primary">Đăng nhập</button>
+      <button type="submit" class="btn-primary">Mở khóa</button>
     </div>
   </form>
 </dialog>
@@ -330,7 +330,9 @@ const firebaseConfig = {
 /* ================================================== */
 
 const configured = !firebaseConfig.apiKey.includes('DAN_');
+const ADMIN_CODE = 'Quyen202Lee';
 let db = null;
+let isAdmin = sessionStorage.getItem('anhem_admin') === '1';
 let members = [];
 
 const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -358,7 +360,7 @@ function render() {
       <td>${esc(m.chuc)}</td>
       <td><span class="tag ${statusClass(m.trangthai)}">${esc(m.trangthai)}</span></td>
       <td>${esc(m.ghichu) || '—'}</td>
-      <td><button class="btn-del" data-id="${esc(m.id)}" type="button" aria-label="Xóa ${esc(m.ten)}">Xóa</button></td>
+      <td>${isAdmin ? `<button class="btn-del" data-id="${esc(m.id)}" type="button" aria-label="Xóa ${esc(m.ten)}">Xóa</button>` : ''}</td>
     </tr>`).join('');
 }
 
@@ -372,6 +374,48 @@ if (configured) {
 } else {
   showMsg('Chưa cấu hình Firebase', 'Mở file index.html và dán firebaseConfig ở đầu &lt;script type="module"&gt;.');
 }
+
+const adminBtn = document.getElementById('adminBtn');
+const clearBtn = document.getElementById('clear');
+const adminDlg = document.getElementById('adminDlg');
+const adminErr = document.getElementById('adminErr');
+
+function syncAdminUI() {
+  adminBtn.textContent = isAdmin ? 'Khóa quản trị' : 'Quản trị';
+  adminBtn.classList.toggle('admin-on', isAdmin);
+  clearBtn.hidden = !isAdmin;
+  render();
+}
+syncAdminUI();
+
+adminBtn.addEventListener('click', () => {
+  if (isAdmin) {
+    isAdmin = false;
+    sessionStorage.removeItem('anhem_admin');
+    syncAdminUI();
+    return;
+  }
+  if (!configured) return alert('Chưa cấu hình Firebase.');
+  adminErr.textContent = '';
+  document.getElementById('adminForm').reset();
+  adminDlg.showModal();
+});
+
+document.getElementById('adminCancel').addEventListener('click', () => adminDlg.close());
+
+document.getElementById('adminForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if (adminPass.value !== ADMIN_CODE) {
+    adminErr.textContent = 'Mã bảo mật không đúng.';
+    adminPass.select();
+    return;
+  }
+  adminErr.textContent = '';
+  isAdmin = true;
+  sessionStorage.setItem('anhem_admin', '1');
+  adminDlg.close();
+  syncAdminUI();
+});
 
 document.getElementById('form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -389,7 +433,10 @@ document.getElementById('form').addEventListener('submit', async e => {
 
   const id = encodeURIComponent(m.ten.toLowerCase());
   const exists = members.some(x => x.id === id);
-  if (exists && !confirm('Tên ingame "' + m.ten + '" đã có. Cập nhật lại hồ sơ?')) return;
+  if (exists) {
+    if (!isAdmin) return alert('Tên ingame "' + m.ten + '" đã có. Chỉ bang chủ mới sửa được hồ sơ này.');
+    if (!confirm('Tên ingame "' + m.ten + '" đã có. Cập nhật lại hồ sơ?')) return;
+  }
 
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
@@ -400,7 +447,11 @@ document.getElementById('form').addEventListener('submit', async e => {
     await setDoc(doc(db, 'members', id), data, { merge: true });
     e.target.reset();
   } catch (err) {
-    alert('Lỗi lưu dữ liệu: ' + err.message);
+    if (err.code === 'permission-denied') {
+      alert('Không có quyền. Tên này đã được người khác đăng ký.');
+    } else {
+      alert('Lỗi lưu dữ liệu: ' + err.message);
+    }
   } finally {
     btn.disabled = false;
     btn.textContent = 'Lưu hồ sơ';
@@ -409,7 +460,7 @@ document.getElementById('form').addEventListener('submit', async e => {
 
 tbody.addEventListener('click', async e => {
   const btn = e.target.closest('.btn-del');
-  if (!btn) return;
+  if (!btn || !isAdmin) return;
   const m = members.find(x => x.id === btn.dataset.id);
   if (!confirm('Xóa "' + (m ? m.ten : '') + '" khỏi danh sách?')) return;
   try {
@@ -420,7 +471,7 @@ tbody.addEventListener('click', async e => {
 });
 
 document.getElementById('clear').addEventListener('click', async () => {
-  if (!configured || !members.length) return;
+  if (!configured || !isAdmin || !members.length) return;
   if (!confirm('Xóa toàn bộ danh sách? Không khôi phục được.')) return;
   try {
     await Promise.all(members.map(x => deleteDoc(doc(db, 'members', x.id))));
